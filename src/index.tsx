@@ -100,7 +100,15 @@ app.use(
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Blog</title>
-        <style>{`img { max-width: 100%; height: auto; }`}</style>
+        <style>{`
+          img { max-width: 100%; height: auto; }
+          body { background: #fff; color: #111; }
+          a { color: #0066cc; }
+          @media (prefers-color-scheme: dark) {
+            body { background: #111; color: #eee; }
+            a { color: #6db3f2; }
+          }
+        `}</style>
       </head>
       <body style={{ maxWidth: "650px", margin: "0 auto", padding: "1rem" }}>
         <Header />
