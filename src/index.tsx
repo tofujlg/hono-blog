@@ -11,7 +11,6 @@ interface Post {
   title: string;
   date: string;
   tags: string[];
-  emoji: string;
   content: string;
 }
 
@@ -58,13 +57,21 @@ async function getPosts(): Promise<Post[]> {
           title: meta.title || slug,
           date: meta.date || "",
           tags: meta.tags || [],
-          emoji: meta.emoji || "",
           content: body,
         };
       })
   );
   return posts.sort((a, b) => b.date.localeCompare(a.date));
 }
+
+const Header = () => (
+  <header>
+    <nav>
+      <a href="/">Blog</a> | <a href="/about">About</a> | <a href="/works">Works</a>
+    </nav>
+    <hr />
+  </header>
+);
 
 app.use(
   jsxRenderer(({ children }) => (
@@ -74,7 +81,10 @@ app.use(
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Blog</title>
       </head>
-      <body>{children}</body>
+      <body>
+        <Header />
+        {children}
+      </body>
     </html>
   ))
 );
@@ -96,6 +106,59 @@ app.get("/", async (c) => {
   );
 });
 
+app.get("/about", (c) => {
+  return c.render(
+    <main>
+      <h1>About Me</h1>
+      <p>Software Developer</p>
+      <p>
+        東京在住のソフトウェアエンジニアのブログです。業務ではネイティブアプリ、Web開発をしています。
+        他には筋トレ、バスケ、ピラティスなどのボディーワーク、映画・映像に興味があります。
+      </p>
+      <p>
+        Software Developer in Tokyo. I build native apps and web apps at work.
+        I like weight training, body work such as Pilates, basketball, and movies.
+      </p>
+      <p>React Native, Next.js, TypeScript, Java</p>
+    </main>
+  );
+});
+
+app.get("/works", (c) => {
+  return c.render(
+    <main>
+      <h1>My Works</h1>
+
+      <section>
+        <h2>growview</h2>
+        <p>2024</p>
+        <p>React Native製の筋トレ記録アプリ。日々のトレーニングを記録し、成果を動画で出力することが可能。</p>
+        <p>Platforms: iOS, Android</p>
+        <p>Tech stack: React Native, Expo, TypeScript, NativeWind, React-Native-Reanimated, FFMpeg</p>
+        <p>
+          Download:{" "}
+          <a href="https://apps.apple.com/us/app/growview/id6737449909" target="_blank" rel="noreferrer">App Store</a>{" "}
+          | <a href="https://play.google.com/store/apps/details?id=com.jujekebab.growview" target="_blank" rel="noreferrer">Play Store</a>
+        </p>
+      </section>
+
+      <hr />
+
+      <section>
+        <h2>Imagine</h2>
+        <p>2025</p>
+        <p>目標管理アプリ</p>
+        <p>Platforms: Android</p>
+        <p>Tech stack: Jetpack Compose, Kotlin</p>
+        <p>
+          Download:{" "}
+          <a href="https://play.google.com/store/apps/details?id=com.jujekebab.imagine" target="_blank" rel="noreferrer">Play Store</a>
+        </p>
+      </section>
+    </main>
+  );
+});
+
 app.get(
   "/posts/:slug",
   ssgParams(async () => {
@@ -112,9 +175,6 @@ app.get(
     const html = await marked(post.content);
     return c.render(
       <main>
-        <p>
-          <a href="/">← Back</a>
-        </p>
         <article>
           <h1>{post.title}</h1>
           <p>
