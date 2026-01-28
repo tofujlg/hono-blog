@@ -64,7 +64,7 @@ import "prismjs/themes/prism-tomorrow.css"
 
 *どれが本文でどれがファイル名か見分けがつかない。*
 
-![Test](./screenshot.png)
+![Test](/images/2021-01-gatsby-prism-how-to-install-screenshot.png)
 <br />
 <br />
 

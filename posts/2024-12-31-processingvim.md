@@ -29,4 +29,4 @@ return {
 
 vimを再起動して、プロジェクトを開きます。
 `:make`を実行することでprocessingを実行できます。
-![pic](./processing_vim.png)
+![pic](/images/2024-processing_vim.png)

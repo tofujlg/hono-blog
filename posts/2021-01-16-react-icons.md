@@ -6,7 +6,7 @@ emoji: ""
 ---
 
 ## 目標
-![icon](./react-icon.png)
+![icon](/images/2021-01-react-icon-gatsby-react-icon.png)
 <br/>
 
 このようにFont awsomeのようなアイコンをReact製のサイトに追加したい。
@@ -45,7 +45,7 @@ target="_blank"
 <br/>
 <br/>
 
-![icon](./react-icon.png)
+![icon](/images/2021-01-react-icon-gatsby-react-icon.png)
 
 
 とても簡単に導入できた。

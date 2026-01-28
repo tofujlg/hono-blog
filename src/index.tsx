@@ -1,10 +1,30 @@
 import { Hono } from "hono";
 import { jsxRenderer } from "hono/jsx-renderer";
+import { serveStatic } from "hono/bun";
 import { ssgParams } from "hono/ssg";
-import { marked } from "marked";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
+import remarkExpressiveCode from "remark-expressive-code";
+import remarkRehype from "remark-rehype";
+import rehypeStringify from "rehype-stringify";
 import { readdir, readFile } from "node:fs/promises";
 
+const processor = unified()
+  .use(remarkParse)
+  .use(remarkGfm)
+  .use(remarkExpressiveCode)
+  .use(remarkRehype, { allowDangerousHtml: true })
+  .use(rehypeStringify, { allowDangerousHtml: true });
+
+async function processMarkdown(content: string): Promise<string> {
+  const result = await processor.process(content);
+  return String(result);
+}
+
 const app = new Hono();
+
+app.use("/images/*", serveStatic({ root: "./public" }));
 
 interface Post {
   slug: string;
@@ -80,8 +100,9 @@ app.use(
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Blog</title>
+        <style>{`img { max-width: 100%; height: auto; }`}</style>
       </head>
-      <body>
+      <body style={{ maxWidth: "650px", margin: "0 auto", padding: "1rem" }}>
         <Header />
         {children}
       </body>
@@ -172,7 +193,7 @@ app.get(
     if (!post) {
       return c.notFound();
     }
-    const html = await marked(post.content);
+    const html = await processMarkdown(post.content);
     return c.render(
       <main>
         <article>

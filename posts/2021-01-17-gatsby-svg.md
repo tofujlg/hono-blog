@@ -86,7 +86,7 @@ export const blogListQuery = graphql`
 <br/>
 　無事、Reactのロゴを表示させることができました。
 
-![screenshot](./Screenshot.png)
+![screenshot](/images/2021-01-setting-svg-file-as-hero-Screenshot.png)
 
 <br />
 　これと同じことをブログポストのテンプレートでも行う必要がありますが、作業は全く同じです。
