@@ -1,5 +1,5 @@
 import { toSSG } from "hono/ssg";
-import { cp } from "node:fs/promises";
+import { cp, copyFile } from "node:fs/promises";
 import app from "./index";
 
 const result = await toSSG(app, {
@@ -18,8 +18,9 @@ if (!result.success) {
   process.exit(1);
 }
 
-// Copy images to dist
+// Copy public assets to dist
 await cp("./public/images", "./dist/images", { recursive: true });
-console.log("Copied images to dist/images");
+await copyFile("./public/theme.js", "./dist/theme.js");
+console.log("Copied public assets to dist");
 
 console.log("SSG build complete!");

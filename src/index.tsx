@@ -24,7 +24,8 @@ async function processMarkdown(content: string): Promise<string> {
 
 const app = new Hono();
 
-app.use("/images/*", serveStatic({ root: "./public" }));
+app.get("/theme.js", serveStatic({ path: "./public/theme.js" }));
+app.get("/images/*", serveStatic({ root: "./public" }));
 
 interface Post {
   slug: string;
@@ -88,6 +89,8 @@ const Header = () => (
   <header>
     <nav>
       <a href="/">Blog</a> | <a href="/about">About</a> | <a href="/works">Works</a>
+      {" | "}
+      <button id="theme-toggle">Toggle Dark</button>
     </nav>
     <hr />
   </header>
@@ -100,14 +103,13 @@ app.use(
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Blog</title>
+        <script src="/theme.js"></script>
         <style>{`
           img { max-width: 100%; height: auto; }
           body { background: #fff; color: #111; }
           a { color: #0066cc; }
-          @media (prefers-color-scheme: dark) {
-            body { background: #111; color: #eee; }
-            a { color: #6db3f2; }
-          }
+          html.dark body { background: #111; color: #eee; }
+          html.dark a { color: #6db3f2; }
         `}</style>
       </head>
       <body style={{ maxWidth: "650px", margin: "0 auto", padding: "1rem" }}>
