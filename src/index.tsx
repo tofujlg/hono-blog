@@ -6,20 +6,64 @@ import { readdir, readFile } from "node:fs/promises";
 
 const app = new Hono();
 
-async function getPosts() {
+interface Post {
+  slug: string;
+  title: string;
+  date: string;
+  tags: string[];
+  emoji: string;
+  content: string;
+}
+
+function parseFrontmatter(content: string): { meta: Record<string, any>; body: string } {
+  const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  if (!match) {
+    return { meta: {}, body: content };
+  }
+
+  const [, frontmatter, body] = match;
+  const meta: Record<string, any> = {};
+
+  for (const line of frontmatter.split("\n")) {
+    const kv = line.match(/^(\w+):\s*(.+)$/);
+    if (kv) {
+      const [, key, value] = kv;
+      if (value.startsWith('"') && value.endsWith('"')) {
+        meta[key] = value.slice(1, -1);
+      } else if (value.startsWith("[")) {
+        meta[key] = value
+          .slice(1, -1)
+          .split(",")
+          .map((s) => s.trim().replace(/^"|"$/g, ""));
+      } else {
+        meta[key] = value;
+      }
+    }
+  }
+
+  return { meta, body };
+}
+
+async function getPosts(): Promise<Post[]> {
   const files = await readdir("./posts");
   const posts = await Promise.all(
     files
       .filter((f) => f.endsWith(".md"))
       .map(async (file) => {
         const slug = file.replace(".md", "");
-        const content = await readFile(`./posts/${file}`, "utf-8");
-        const lines = content.split("\n");
-        const title = lines[0].replace(/^#\s*/, "");
-        return { slug, title, content };
+        const raw = await readFile(`./posts/${file}`, "utf-8");
+        const { meta, body } = parseFrontmatter(raw);
+        return {
+          slug,
+          title: meta.title || slug,
+          date: meta.date || "",
+          tags: meta.tags || [],
+          emoji: meta.emoji || "",
+          content: body,
+        };
       })
   );
-  return posts;
+  return posts.sort((a, b) => b.date.localeCompare(a.date));
 }
 
 app.use(
@@ -43,7 +87,8 @@ app.get("/", async (c) => {
       <ul>
         {posts.map((post) => (
           <li>
-            <a href={`/posts/${post.slug}`}>{post.title}</a>
+            <a href={`/posts/${post.slug}`}>{post.title}</a>{" "}
+            <small>({post.date})</small>
           </li>
         ))}
       </ul>
@@ -70,7 +115,13 @@ app.get(
         <p>
           <a href="/">← Back</a>
         </p>
-        <article dangerouslySetInnerHTML={{ __html: html }} />
+        <article>
+          <h1>{post.title}</h1>
+          <p>
+            <small>{post.date}</small>
+          </p>
+          <div dangerouslySetInnerHTML={{ __html: html }} />
+        </article>
       </main>
     );
   }
