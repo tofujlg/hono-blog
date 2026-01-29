@@ -65,13 +65,14 @@ function parseFrontmatter(content: string): { meta: Record<string, any>; body: s
 }
 
 async function getPosts(): Promise<Post[]> {
-  const files = await readdir("./posts");
+  const files = await readdir("./posts", { recursive: true });
   const posts = await Promise.all(
     files
       .filter((f) => f.endsWith(".md"))
       .map(async (file) => {
-        const slug = file.replace(".md", "");
-        const raw = await readFile(`./posts/${file}`, "utf-8");
+        const filename = typeof file === "string" ? file : file.toString();
+        const slug = filename.replace(/^.*[\\/]/, "").replace(".md", "");
+        const raw = await readFile(`./posts/${filename}`, "utf-8");
         const { meta, body } = parseFrontmatter(raw);
         return {
           slug,

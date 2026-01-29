@@ -4,7 +4,7 @@ import app from "./index";
 
 const result = await toSSG(app, {
   dir: "./dist",
-  afterGenerateHook: async (result) => {
+  afterGenerateHook: async (result: any) => {
     if (result.files) {
       for (const file of result.files) {
         console.log(`Generated: ${file.path}`);
