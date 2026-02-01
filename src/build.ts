@@ -1,8 +1,9 @@
 import { toSSG } from "hono/ssg";
+import * as fs from "node:fs/promises";
 import { cp, copyFile } from "node:fs/promises";
 import app from "./index";
 
-const result = await toSSG(app, {
+const result = await toSSG(app, fs, {
   dir: "./dist",
   afterGenerateHook: async (result: any) => {
     if (result.files) {

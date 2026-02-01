@@ -65,14 +65,20 @@ function parseFrontmatter(content: string): { meta: Record<string, any>; body: s
 }
 
 async function getPosts(): Promise<Post[]> {
-  const files = await readdir("./posts", { recursive: true });
+  const files = await readdir("./content/blog", { recursive: true });
   const posts = await Promise.all(
     files
       .filter((f) => f.endsWith(".md"))
       .map(async (file) => {
         const filename = typeof file === "string" ? file : file.toString();
-        const slug = filename.replace(/^.*[\\/]/, "").replace(".md", "");
-        const raw = await readFile(`./posts/${filename}`, "utf-8");
+        // Path format: YYYY/MM/MMDD-slug/index.md
+        // Extract slug as: YYYY/MM/MMDD-slug
+        const pathParts = filename.split("/");
+        // Remove the last part (index.md or filename.md)
+        pathParts.pop();
+        const slug = pathParts.join("/");
+
+        const raw = await readFile(`./content/blog/${filename}`, "utf-8");
         const { meta, body } = parseFrontmatter(raw);
         return {
           slug,
@@ -192,15 +198,21 @@ app.get("/works", (c) => {
 });
 
 app.get(
-  "/posts/:slug",
+  "/posts/:year/:month/:slug",
   ssgParams(async () => {
     const posts = await getPosts();
-    return posts.map((post) => ({ slug: post.slug }));
+    return posts.map((post) => {
+      const [year, month, slug] = post.slug.split("/");
+      return { year, month, slug };
+    });
   }),
   async (c) => {
+    const year = c.req.param("year");
+    const month = c.req.param("month");
     const slug = c.req.param("slug");
+    const fullSlug = `${year}/${month}/${slug}`;
     const posts = await getPosts();
-    const post = posts.find((p) => p.slug === slug);
+    const post = posts.find((p) => p.slug === fullSlug);
     if (!post) {
       return c.notFound();
     }
