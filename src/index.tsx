@@ -11,6 +11,7 @@ import { Layout } from "./components/Layout";
 const app = new Hono();
 
 app.get("/theme.js", serveStatic({ path: "./public/theme.js" }));
+app.get("/styles.css", serveStatic({ path: "./public/styles.css" }));
 
 // RSS Feed
 app.get("/rss.xml", async (c) => {

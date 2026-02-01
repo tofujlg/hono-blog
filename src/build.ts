@@ -57,4 +57,7 @@ console.log(`Copied ${imagesCopied} article images to dist/images`);
 await copyFile("./public/theme.js", "./dist/theme.js");
 console.log("Copied theme.js to dist");
 
+await copyFile("./public/styles.css", "./dist/styles.css");
+console.log("Copied styles.css to dist");
+
 console.log("SSG build complete!");
