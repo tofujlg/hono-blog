@@ -2,25 +2,11 @@ import { Hono } from "hono";
 import { jsxRenderer } from "hono/jsx-renderer";
 import { serveStatic } from "hono/bun";
 import { ssgParams } from "hono/ssg";
-import { unified } from "unified";
-import remarkParse from "remark-parse";
-import remarkGfm from "remark-gfm";
-import remarkExpressiveCode from "remark-expressive-code";
-import remarkRehype from "remark-rehype";
-import rehypeStringify from "rehype-stringify";
-import { readdir, readFile } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 
-const processor = unified()
-  .use(remarkParse)
-  .use(remarkGfm)
-  .use(remarkExpressiveCode)
-  .use(remarkRehype, { allowDangerousHtml: true })
-  .use(rehypeStringify, { allowDangerousHtml: true });
-
-async function processMarkdown(content: string): Promise<string> {
-  const result = await processor.process(content);
-  return String(result);
-}
+import { getPosts } from "./lib/posts";
+import { processMarkdown } from "./lib/markdown";
+import { Layout } from "./components/Layout";
 
 const app = new Hono();
 
@@ -96,104 +82,8 @@ app.get("/images/:filename", async (c) => {
   return c.notFound();
 });
 
-interface Post {
-  slug: string;
-  title: string;
-  date: string;
-  tags: string[];
-  content: string;
-}
-
-function parseFrontmatter(content: string): { meta: Record<string, any>; body: string } {
-  const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-  if (!match) {
-    return { meta: {}, body: content };
-  }
-
-  const [, frontmatter, body] = match;
-  const meta: Record<string, any> = {};
-
-  for (const line of frontmatter.split("\n")) {
-    const kv = line.match(/^(\w+):\s*(.+)$/);
-    if (kv) {
-      const [, key, value] = kv;
-      if (value.startsWith('"') && value.endsWith('"')) {
-        meta[key] = value.slice(1, -1);
-      } else if (value.startsWith("[")) {
-        meta[key] = value
-          .slice(1, -1)
-          .split(",")
-          .map((s) => s.trim().replace(/^"|"$/g, ""));
-      } else {
-        meta[key] = value;
-      }
-    }
-  }
-
-  return { meta, body };
-}
-
-async function getPosts(): Promise<Post[]> {
-  const files = await readdir("./content/blog", { recursive: true });
-  const posts = await Promise.all(
-    files
-      .filter((f) => f.endsWith(".md"))
-      .map(async (file) => {
-        const filename = typeof file === "string" ? file : file.toString();
-        // Path format: YYYY/MM/MMDD-slug/index.md
-        // Extract slug as: YYYY/MM/MMDD-slug
-        const pathParts = filename.split("/");
-        // Remove the last part (index.md or filename.md)
-        pathParts.pop();
-        const slug = pathParts.join("/");
-
-        const raw = await readFile(`./content/blog/${filename}`, "utf-8");
-        const { meta, body } = parseFrontmatter(raw);
-        return {
-          slug,
-          title: meta.title || slug,
-          date: meta.date || "",
-          tags: meta.tags || [],
-          content: body,
-        };
-      })
-  );
-  return posts.sort((a, b) => b.date.localeCompare(a.date));
-}
-
-const Header = () => (
-  <header>
-    <nav>
-      <a href="/">Blog</a> | <a href="/about">About</a> | <a href="/works">Works</a> | <a href="/rss.xml">RSS</a>
-      {" | "}
-      <button id="theme-toggle">Toggle Dark</button>
-    </nav>
-    <hr />
-  </header>
-);
-
 app.use(
-  jsxRenderer(({ children }) => (
-    <html>
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Blog</title>
-        <script src="/theme.js"></script>
-        <style>{`
-          img { max-width: 100%; height: auto; }
-          body { background: #fff; color: #111; }
-          a { color: #0066cc; }
-          html.dark body { background: #111; color: #eee; }
-          html.dark a { color: #6db3f2; }
-        `}</style>
-      </head>
-      <body style={{ maxWidth: "650px", margin: "0 auto", padding: "1rem" }}>
-        <Header />
-        {children}
-      </body>
-    </html>
-  ))
+  jsxRenderer(({ children }) => <Layout>{children}</Layout>)
 );
 
 app.get("/", async (c) => {
