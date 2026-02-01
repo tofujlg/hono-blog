@@ -25,7 +25,76 @@ async function processMarkdown(content: string): Promise<string> {
 const app = new Hono();
 
 app.get("/theme.js", serveStatic({ path: "./public/theme.js" }));
-app.get("/images/*", serveStatic({ root: "./public" }));
+
+// RSS Feed
+app.get("/rss.xml", async (c) => {
+  const posts = await getPosts();
+  const siteUrl = "https://blog.example.com"; // Base URL for the blog
+
+  const rssItems = posts.slice(0, 20).map((post) => {
+    const description = post.content
+      .replace(/[#*`\[\]]/g, "") // Remove markdown syntax
+      .replace(/<[^>]*>/g, "") // Remove any HTML tags
+      .trim()
+      .slice(0, 200);
+
+    const pubDate = new Date(post.date).toUTCString();
+
+    return `    <item>
+      <title><![CDATA[${post.title}]]></title>
+      <link>${siteUrl}/posts/${post.slug}</link>
+      <guid>${siteUrl}/posts/${post.slug}</guid>
+      <description><![CDATA[${description}...]]></description>
+      <pubDate>${pubDate}</pubDate>
+    </item>`;
+  }).join("\n");
+
+  const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blog</title>
+    <link>${siteUrl}</link>
+    <description>A developer's blog for publishing articles and technical content</description>
+    <language>en</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <atom:link href="${siteUrl}/rss.xml" rel="self" type="application/rss+xml"/>
+${rssItems}
+  </channel>
+</rss>`;
+
+  return c.text(rss, 200, {
+    "Content-Type": "application/rss+xml; charset=utf-8",
+  });
+});
+
+// Serve images - try public/images first, then search article folders
+app.get("/images/:filename", async (c) => {
+  const filename = c.req.param("filename");
+
+  // First try public/images
+  try {
+    const publicPath = `./public/images/${filename}`;
+    const file = Bun.file(publicPath);
+    if (await file.exists()) {
+      return new Response(file);
+    }
+  } catch {}
+
+  // Search in article folders
+  const files = await readdir("./content/blog", { recursive: true });
+  for (const f of files) {
+    const filePath = typeof f === "string" ? f : f.toString();
+    if (filePath.endsWith(filename)) {
+      const fullPath = `./content/blog/${filePath}`;
+      const file = Bun.file(fullPath);
+      if (await file.exists()) {
+        return new Response(file);
+      }
+    }
+  }
+
+  return c.notFound();
+});
 
 interface Post {
   slug: string;
@@ -95,7 +164,7 @@ async function getPosts(): Promise<Post[]> {
 const Header = () => (
   <header>
     <nav>
-      <a href="/">Blog</a> | <a href="/about">About</a> | <a href="/works">Works</a>
+      <a href="/">Blog</a> | <a href="/about">About</a> | <a href="/works">Works</a> | <a href="/rss.xml">RSS</a>
       {" | "}
       <button id="theme-toggle">Toggle Dark</button>
     </nav>
