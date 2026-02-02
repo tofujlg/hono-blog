@@ -3,6 +3,7 @@ title: "自作キーボード遍歴"
 date: "2025-01-14"
 tags: ["Ergonomics", "Keyboard"]
 emoji: ""
+published : false
 ---
 
 ## Main
