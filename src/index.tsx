@@ -105,21 +105,20 @@ app.get("/", async (c) => {
 });
 
 app.get("/about", (c) => {
-  return c.render(
-    <main>
-      <h1>About Me</h1>
-      <p>Software Developer</p>
-      <p>
-        東京在住のソフトウェアエンジニアのブログです。業務ではネイティブアプリ、Web開発をしています。
-        他には筋トレ、バスケ、ピラティスなどのボディーワーク、映画・映像に興味があります。
-      </p>
-      <p>
-        Software Developer in Tokyo. I build native apps and web apps at work.
-        I like weight training, body work such as Pilates, basketball, and movies.
-      </p>
-      <p>React Native, Next.js, TypeScript, Java</p>
-    </main>
-  );
+	return c.render(
+		<main>
+			<h1>Author</h1>
+			<p>jujekebab</p>
+			<p>
+			主にソフトウェアとコンピューターについて書きますが、身体と映像・文章などのメディアにも関心があります。
+			</p>
+			<p>
+			Mostly, writing (about) software and computer. Sometimes about body and mind and other stuffs.
+			</p>
+			<p>
+			</p>
+		</main>
+	);
 });
 
 app.get("/works", (c) => {
