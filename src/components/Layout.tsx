@@ -6,7 +6,7 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => (
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Blog</title>
+      <title>jujekebab</title>
       <link rel="stylesheet" href="/styles.css" />
       <script src="/theme.js"></script>
     </head>

@@ -16,7 +16,7 @@ app.get("/styles.css", serveStatic({ path: "./public/styles.css" }));
 // RSS Feed
 app.get("/rss.xml", async (c) => {
   const posts = await getPosts();
-  const siteUrl = "https://blog.example.com"; // Base URL for the blog
+  const siteUrl = "https://jujekebab.com"; // Base URL for the blog
 
   const rssItems = posts.slice(0, 20).map((post) => {
     const description = post.content
@@ -39,9 +39,9 @@ app.get("/rss.xml", async (c) => {
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Blog</title>
+    <title>jujekebab</title>
     <link>${siteUrl}</link>
-    <description>A developer's blog for publishing articles and technical content</description>
+    <description>jujekebab's blog</description>
     <language>en</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${siteUrl}/rss.xml" rel="self" type="application/rss+xml"/>
@@ -91,7 +91,7 @@ app.get("/", async (c) => {
   const posts = await getPosts();
   return c.render(
     <main>
-      <h1>Blog</h1>
+      <h1>jujekebab</h1>
       <ul>
         {posts.map((post) => (
           <li>
