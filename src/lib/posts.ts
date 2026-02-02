@@ -28,6 +28,8 @@ export function parseFrontmatter(content: string): { meta: Record<string, any>; 
           .slice(1, -1)
           .split(",")
           .map((s) => s.trim().replace(/^"|"$/g, ""));
+      } else if (value === "true" || value === "false") {
+        meta[key] = value === "true";
       } else {
         meta[key] = value;
       }
@@ -53,6 +55,9 @@ export async function getPosts(): Promise<Post[]> {
 
         const raw = await readFile(`./content/blog/${filename}`, "utf-8");
         const { meta, body } = parseFrontmatter(raw);
+        if (meta.publish === false) {
+          return null;
+        }
         return {
           slug,
           title: meta.title || slug,
@@ -62,5 +67,5 @@ export async function getPosts(): Promise<Post[]> {
         };
       })
   );
-  return posts.sort((a, b) => b.date.localeCompare(a.date));
+  return posts.filter((post): post is Post => post !== null).sort((a, b) => b.date.localeCompare(a.date));
 }
